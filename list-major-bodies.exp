@@ -1,0 +1,22 @@
+#!/usr/bin/expect
+
+##############################################################################
+# Connects to NASA JPL Horizons & retrieves major bodies available for query #
+##############################################################################
+
+# Connect to the Server
+spawn telnet horizons.jpl.nasa.gov 6775
+set timeout 300
+
+# Turn off Server Paging
+expect "Horizons>" { send "PAGE\r" }
+
+# Request list
+expect "Horizons>" { send "MB\r" }
+
+# Disconnect from the Session
+expect "Select" { send "N\r" }
+expect "Horizons>" { send "QUIT\r" }
+
+# Send all Output to Standard Out
+expect eof

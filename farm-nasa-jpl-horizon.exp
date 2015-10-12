@@ -1,0 +1,76 @@
+#########################################################
+# Connects to NASA's JPL Lab for Solar System Body Data #
+#########################################################
+
+# Assign Local Variables to Shell Arguments
+set body [lindex $argv 0]
+set startTime [lindex $argv 1]
+set endTime [lindex $argv 2]
+set interval [lindex $argv 3]
+
+# Validate Something Was Passed for Each Parameter
+if {[llength $body] + [llength $startTime] + [llength $endTime] + [llength $interval] < 4} {
+  puts "\[ERROR\] Invalid Arguments Provided"
+  puts " -Syntax:  getHorizonData {BODY} {StartTime} {EndTime} {Interval}"
+  puts " -Example: getHorizonData Mars \"1900-Jan-04 00:00\" \"2100-Jan-04 00:00\" \"1 month\""
+  exit
+}
+
+# Connect to the Server
+spawn telnet horizons.jpl.nasa.gov 6775
+set timeout 300
+
+# Turn off Server Paging
+expect "Horizons>" { send "PAGE\r" }
+
+# Specify Body Of Interest
+expect "Horizons>" { send "$body\r" }
+
+# Specify Ephemeris Data
+expect "phemeris" { send "E\r" }
+
+# Specify Vector Coordinates
+expect "Vectors" { send "v\r" }
+
+# Specify the GeoCenter
+#expect "center" { send "@sun\r" }
+expect "center" { send "@399\r" }
+
+# Specify an Eclipic Plane (Recommended for Sun Centered Simulations by JPL)
+expect "plane" { send "eclip\r" }
+
+# Specify Start and End Time 
+expect "Starting" { send "$startTime\r" }
+expect "Ending" { send "$endTime\r" }
+
+# Specify Data Interval Rate
+expect "interval" { send "$interval\r" }
+
+# Change Default Output
+expect "Accept default" { send "n\r" }
+
+# Keeping as Default
+expect "frame" { send "\r" }
+expect "Corrections" { send "\r" }
+
+# Ensuring as KM Units
+expect "units" { send "1\r" }
+
+# Specifying CSV File
+expect "CSV" { send "YES\r" }
+
+# No Labeling of Coordinates ( Doesn't Occur in CSV Files Anyway )
+expect "Label" { send "NO\r" }
+
+# Keeping as Default
+expect "table type" { send "\r" }
+
+# Request Server to Provide an FTP Link
+expect "Select" { send "F\r" }
+
+# Disconnect from the Session
+expect "Select" { send "N\r" }
+expect "Horizons>" { send "QUIT\r" }
+
+# Send all Output to Standard Out
+expect eof

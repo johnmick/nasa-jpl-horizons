@@ -1,0 +1,3 @@
+Expect script currently connects to NASA JPL and fetch Mars data relative to Earth center.
+Bash script wrapper will use a configuration file to fetch multiple datasets into a larger joined JSON.
+Awk script converts a single body file from NASA JPL into JSON representation.
