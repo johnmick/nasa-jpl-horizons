@@ -11,7 +11,6 @@ function trim(s)  { return rtrim(ltrim(s)); }
 BEGIN {
   RECORD_TO_PRINT=""
   META_TO_PRINT=""
-  print "{"
 }
 
 /: /{
@@ -82,6 +81,5 @@ END {
   if (META_TO_PRINT != "") {
     print META_TO_PRINT
   }
-  print "}"
   print "}"
 }

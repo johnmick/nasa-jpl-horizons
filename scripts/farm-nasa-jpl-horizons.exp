@@ -1,3 +1,5 @@
+#!/usr/bin/expect
+
 #########################################################
 # Connects to NASA's JPL Lab for Solar System Body Data #
 #########################################################
@@ -7,6 +9,14 @@ set body [lindex $argv 0]
 set startTime [lindex $argv 1]
 set endTime [lindex $argv 2]
 set interval [lindex $argv 3]
+set bodyCenter [lindex $argv 4]
+
+puts "Body $body"
+puts "Start $startTime"
+puts "End $endTime"
+puts "Interval $interval"
+puts "Body Center $bodyCenter"
+
 
 # Validate Something Was Passed for Each Parameter
 if {[llength $body] + [llength $startTime] + [llength $endTime] + [llength $interval] < 4} {
@@ -34,7 +44,7 @@ expect "Vectors" { send "v\r" }
 
 # Specify the GeoCenter
 #expect "center" { send "@sun\r" }
-expect "center" { send "@399\r" }
+expect "center" { send "@$bodyCenter\r" }
 
 # Specify an Eclipic Plane (Recommended for Sun Centered Simulations by JPL)
 expect "plane" { send "eclip\r" }
