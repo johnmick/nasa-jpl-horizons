@@ -1,13 +1,21 @@
 #!/bin/bash
 
+# Preserve Files Options
+PRESERVE_HORZ=0
+PRESERVE_TMP_JSON=0
+
+# Default Output Locations
 LOG_DIR=logs
+OUTPUT_FILE=nasa-jpl-results.json
+
+# Support Files
 BODY_LIST_FILE=support-files/major-body-list.txt
 CONFIG_FILE=configs/default-example.cfg
+
+# Support Scripts
 FARM_SCRIPT=scripts/farm-nasa-jpl-horizons.exp
 CONVERT_SCRIPT=scripts/data-to-json.awk
 JOIN_SCRIPT=scripts/join-json.awk
-PRESERVE_HORZ=0
-OUTPUT_FILE=results.json
 
 function main
 {
@@ -26,13 +34,14 @@ function display_help
     -l <string>  :  Directory to store generated log files
     -s <string>  :  The expect script which executes HORIZON automation
     -p           :  If enabled, preserves NASA Horizons data files after JSON conversions (by default they are removed)
+    -j           :  If enabled, preserves separate JSON files after conversion (by default they are removed)
     -?           :  Displays this help
   "
 }
 
 function set_options
 {
-  while getopts "c:b:l:s:po:?" opt; do
+  while getopts "c:b:l:s:pjo:?" opt; do
     case $opt in
       o)
         OUTPUT_FILE=${OPTARG}
@@ -51,6 +60,9 @@ function set_options
         ;;
       p)
         PRESERVE_HORZ=1
+        ;;
+      p)
+        PRESERVE_TMP_JSON=1
         ;;
       ?)
         display_help
@@ -102,10 +114,10 @@ function farm_horizons
     BODY_NAME=${BODY_INFO[1]}
     CENTER_NAME=${CENTER_INFO[1]}
 
-    printf '[FETCHING] %s (%s) '         ${BODY_NAME} ${BODY_ID}
-    printf 'from "%s" to "%s" '         "${START_DATE}" "${END_DATE}"
+    printf '[FETCHING] %s (%s) '        "${BODY_NAME}"   "${BODY_ID}"
+    printf 'from "%s" to "%s" '         "${START_DATE}"  "${END_DATE}"
     printf 'every "%s" '                "${INTERVAL}"
-    printf 'with center body %s (%s)\n'  ${CENTER_NAME} ${CENTER_ID}
+    printf 'with center body %s (%s)\n' "${CENTER_NAME}" "${CENTER_ID}"
 
     wget $(
       ./${FARM_SCRIPT} "${BODY_ID}" "${START_DATE}" "${END_DATE}" "${INTERVAL}" "${CENTER_ID}" |
@@ -123,7 +135,9 @@ function farm_horizons
 
   echo "[JOINING] Concatenating JSON files into a single JSON data file"
   ./${JOIN_SCRIPT} *.tmpjson > ${OUTPUT_FILE}
-  rm *.tmpjson
+  if [ ${PRESERVE_TMP_JSON} -eq 0 ]; then
+    rm *.tmpjson
+  fi
 }
 
 main "$@"
